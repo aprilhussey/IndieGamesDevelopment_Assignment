@@ -2855,6 +2855,7 @@ GameObject:
   - component: {fileID: 1148705199}
   - component: {fileID: 1148705198}
   - component: {fileID: 1148705201}
+  - component: {fileID: 1148705202}
   m_Layer: 0
   m_Name: MeowKnight
   m_TagString: Untagged
@@ -2962,6 +2963,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mainMenuAnimator: {fileID: 1148705198}
+--- !u!114 &1148705202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1148705197}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e72680e61ef95845833bc3e7a258b7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1176437044
 GameObject:
   m_ObjectHideFlags: 0

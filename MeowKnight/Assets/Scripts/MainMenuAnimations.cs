@@ -6,10 +6,10 @@ public class MainMenuAnimations : MonoBehaviour
 {
     public Animator mainMenuAnimator;
 
-    public void StartPressed()
+	public void StartPressed()
     {
         mainMenuAnimator.SetBool("startPressed", true);
-    }
+	}
 
 	public void CreditsPressed()
 	{
@@ -20,5 +20,5 @@ public class MainMenuAnimations : MonoBehaviour
 	public void QuitPressed()
     {
         mainMenuAnimator.SetBool("quitPressed", true);
-    }
+	}
 }
