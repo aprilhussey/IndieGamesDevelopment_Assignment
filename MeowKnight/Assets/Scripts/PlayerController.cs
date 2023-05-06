@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
 {
 
     public float moveSpeed = 5f;
-    public float jumpForce = 5f;    // Amount of force added when the player jumps
+    public float jumpForce = 125f;    // Amount of force added when the player jumps
     private bool jumping = false;
 
     private Rigidbody2D rigidbody;
@@ -19,9 +19,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform groundCheck; // A position marking where to check if the player is grounded
     [SerializeField] private Transform ceilingCheck;    // A position marking where to check for ceilings
 
-    const float groundedRadius = .2f;   // Radius of the overlap circle to determine if grounded
+    const float groundedRadius = .5f;   // Radius of the overlap circle to determine if grounded
 	private bool grounded;  // Whether or not the player is grounded
-	const float ceilingRadius = .2f;    // Radius of the overlap circle to determine if the player has hit a ceiling
+	const float ceilingRadius = .5f;    // Radius of the overlap circle to determine if the player has hit a ceiling
     private bool facingRight = true;    // For determining which way the player is currently facing
 
     public UnityEvent onLandEvent;
@@ -31,8 +31,6 @@ public class PlayerController : MonoBehaviour
         inputActions = new InputActions();
         inputActions.Player.Movement.performed += context => moveDirection = context.ReadValue<Vector2>();
         inputActions.Player.Movement.canceled += context => moveDirection = Vector2.zero;
-        inputActions.Player.Jump.performed += context => jumping = true;
-        inputActions.Player.Jump.canceled += context => jumping = false;
 
 		rigidbody = GetComponent<Rigidbody2D>();
 
@@ -71,14 +69,23 @@ public class PlayerController : MonoBehaviour
                 }
 			}
 		}
+		Move(moveDirection.x);
+	}
 
-		Move(moveDirection.x, jumping);
-    }
+    void Update()
+    {
+		if (inputActions.Player.Jump.triggered)
+		{
+			Jump();
+		}
+	}
 
-    void Move(float move, bool jumping)
+    void Move(float move)
     {
         if (grounded)
         {
+            jumping = false;
+
             // Move the player using velocity
             rigidbody.velocity = new Vector2(moveDirection.x * moveSpeed, rigidbody.velocity.y);
 
@@ -95,19 +102,19 @@ public class PlayerController : MonoBehaviour
 				Flip();
             }    
         }
-        // If the player is on the ground and jumps...
-        if (grounded && jumping)
-        {
-            // ... add vertical force to the player
-            grounded = false;
-            Jump();
-        }
     }
 
-    void Jump()
+    private void Jump()
     {
-        rigidbody.AddForce(new Vector2(0f, jumpForce));
-    }
+        jumping = true;
+		// If the player is on the ground and jumps...
+		if (grounded && jumping)
+        {
+			// ... add vertical force to the player
+			grounded = false;
+			rigidbody.AddForce(new Vector2(0f, jumpForce));
+		}
+	}
 
     private void Flip()
     {
