@@ -8,8 +8,12 @@ public class PlayerController : MonoBehaviour
 {
 
     public float moveSpeed = 5f;
-    public float jumpForce = 125f;    // Amount of force added when the player jumps
-    private bool jumping = false;
+
+    public float minJumpForce = 1f;   // Min jump force
+	public float maxJumpForce = 8f;   // Max jump force
+    public float jumpForceIncrement = .1f;   // Force increment
+	public float currentJumpForce;    // Current amount of force added when the player jumps
+	private bool jumping = false;
 
     private Rigidbody2D rigidbody;
     private Vector2 moveDirection;
@@ -69,23 +73,34 @@ public class PlayerController : MonoBehaviour
                 }
 			}
 		}
-		Move(moveDirection.x);
+        if (grounded && !jumping)
+        {
+            Move(moveDirection.x);
+        }
 	}
 
     void Update()
     {
-		if (inputActions.Player.Jump.triggered)
-		{
-			Jump();
-		}
+        Debug.Log("jumping = " + jumping);
+		Debug.Log("grounded = " + grounded);
+		if (grounded)
+        {
+            if (jumping)
+            {
+                currentJumpForce += jumpForceIncrement + Time.deltaTime;
+                
+                if (currentJumpForce >= maxJumpForce)
+                {
+                    Jump();
+                }
+            }
+        }
 	}
 
     void Move(float move)
     {
-        if (grounded)
+        if (grounded || !jumping)
         {
-            jumping = false;
-
             // Move the player using velocity
             rigidbody.velocity = new Vector2(moveDirection.x * moveSpeed, rigidbody.velocity.y);
 
@@ -104,15 +119,34 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void OnJump(InputAction.CallbackContext context)
+    {
+
+        Debug.Log("OnJump called");
+
+        if (context.started)
+        {
+            currentJumpForce = minJumpForce;
+            jumping = true;
+            grounded = false;   // grounded is false so that player cannot move
+        }
+        else if (context.canceled)
+        {
+            Jump();
+        }
+    }
+
     private void Jump()
     {
-        jumping = true;
+        jumping = false;
+        grounded = true;
+
 		// If the player is on the ground and jumps...
-		if (grounded && jumping)
+		if (grounded)
         {
 			// ... add vertical force to the player
-			grounded = false;
-			rigidbody.AddForce(new Vector2(0f, jumpForce));
+			rigidbody.AddForce(new Vector2(0f, currentJumpForce), ForceMode2D.Impulse);
+            currentJumpForce = minJumpForce;
 		}
 	}
 
