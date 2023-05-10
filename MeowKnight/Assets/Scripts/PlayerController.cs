@@ -15,6 +15,9 @@ public class PlayerController : MonoBehaviour
 	public float currentJumpForce;    // Current amount of force added when the player jumps
 	private bool jumping = false;
 
+    public float bounceForce = 100f;
+    public LayerMask wallLayer;
+
     private Rigidbody2D rigidbody;
     private Vector2 moveDirection;
     public InputActions inputActions;
@@ -87,8 +90,8 @@ public class PlayerController : MonoBehaviour
         {
             if (jumping)
             {
-                currentJumpForce += jumpForceIncrement + Time.deltaTime;
-                
+                currentJumpForce += jumpForceIncrement * Time.deltaTime;
+
                 if (currentJumpForce >= maxJumpForce)
                 {
                     Jump();
@@ -97,9 +100,20 @@ public class PlayerController : MonoBehaviour
         }
 	}
 
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
+        {
+            // Calculate the direction to bounce in
+            Vector2 bounceDirection = collision.contacts[0].normal;
+            // Apply the bounce force
+            rigidbody.AddForce(bounceDirection * bounceForce, ForceMode2D.Impulse);
+        }
+    }
+
     void Move(float move)
     {
-        if (grounded || !jumping)
+        if (grounded && !jumping)
         {
             // Move the player using velocity
             rigidbody.velocity = new Vector2(moveDirection.x * moveSpeed, rigidbody.velocity.y);
@@ -128,7 +142,12 @@ public class PlayerController : MonoBehaviour
         {
             currentJumpForce = minJumpForce;
             jumping = true;
-            grounded = false;   // grounded is false so that player cannot move
+            grounded = false;   // grounded is false so that player cannot move in air
+
+            if (!jumping && grounded)
+            {
+                rigidbody.velocity = Vector2.zero;  // Set player's velocity to zero, stop moving when jump is pressed
+            }
         }
         else if (context.canceled)
         {
