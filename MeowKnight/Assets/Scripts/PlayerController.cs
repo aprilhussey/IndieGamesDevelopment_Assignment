@@ -76,10 +76,8 @@ public class PlayerController : MonoBehaviour
                 }
 			}
 		}
-        if (grounded && !jumping)
-        {
-            Move(moveDirection.x);
-        }
+
+        Move(moveDirection.x);
 	}
 
     void Update()
@@ -140,14 +138,12 @@ public class PlayerController : MonoBehaviour
 
         if (context.started)
         {
-            currentJumpForce = minJumpForce;
+			if (!jumping && grounded)
+			{
+				rigidbody.velocity = Vector2.zero;  // Set player's velocity to zero, stop moving when jump is pressed
+			}
+			currentJumpForce = minJumpForce;
             jumping = true;
-            grounded = false;   // grounded is false so that player cannot move in air
-
-            if (!jumping && grounded)
-            {
-                rigidbody.velocity = Vector2.zero;  // Set player's velocity to zero, stop moving when jump is pressed
-            }
         }
         else if (context.canceled)
         {
