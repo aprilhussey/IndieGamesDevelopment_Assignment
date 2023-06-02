@@ -133,7 +133,6 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
-
         Debug.Log("OnJump called");
 
         if (context.started)
@@ -142,7 +141,8 @@ public class PlayerController : MonoBehaviour
 			{
 				rigidbody.velocity = Vector2.zero;  // Set player's velocity to zero, stop moving when jump is pressed
 			}
-			currentJumpForce = minJumpForce;
+			
+            currentJumpForce = minJumpForce;
             jumping = true;
         }
         else if (context.canceled)
