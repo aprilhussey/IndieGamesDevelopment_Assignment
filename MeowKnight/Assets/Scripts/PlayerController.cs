@@ -33,6 +33,8 @@ public class PlayerController : MonoBehaviour
 
 	public UnityEvent onLandEvent;
 
+	public Animator animator;
+
 	void Awake()
 	{
 		inputActions = new InputActions();
@@ -40,6 +42,8 @@ public class PlayerController : MonoBehaviour
 		inputActions.Player.Movement.canceled += context => moveDirection = Vector2.zero;
 
 		rigidbody = GetComponent<Rigidbody2D>();
+
+		animator = GetComponent<Animator>();
 
 		if (onLandEvent == null)
 		{
@@ -97,6 +101,14 @@ public class PlayerController : MonoBehaviour
 					Jump();
 				}
 			}
+			else
+			{
+				animator.SetBool("landed", true);
+			}
+		}
+		else
+		{
+			animator.SetBool("landed", false);
 		}
 	}
 
@@ -114,7 +126,7 @@ public class PlayerController : MonoBehaviour
 	void Move(float move)
 	{
 		if (grounded && !jumping)
-		{ 
+		{
 			// Move the player using velocity
 			rigidbody.velocity = new Vector2(moveDirection.x * moveSpeed, rigidbody.velocity.y);
 
@@ -144,6 +156,8 @@ public class PlayerController : MonoBehaviour
 			jumping = true;
 			grounded = false;   // grounded is false so that player cannot move in air
 
+			animator.SetBool("jumpStart", true);
+
 			// if (!jumping && grounded)
 			// {
 			//	  rigidbody.velocity = Vector2.zero;  // Set player's velocity to zero, stop moving when jump is pressed
@@ -151,6 +165,7 @@ public class PlayerController : MonoBehaviour
 		}
 		else if (context.canceled)
 		{
+			animator.SetBool("jumpStart", false);
 			Jump();
 		}
 	}
