@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour
 {
@@ -35,6 +36,12 @@ public class PlayerController : MonoBehaviour
 
 	public Animator animator;
 
+	public GameObject winMenu;
+	public GameObject winMenuSelectedButton;
+
+	public GameObject pauseMenu;
+	public GameObject pauseMenuSelectedButton;
+
 	void Awake()
 	{
 		inputActions = new InputActions();
@@ -54,11 +61,15 @@ public class PlayerController : MonoBehaviour
 	void OnEnable()
 	{
 		inputActions.Player.Enable();
+
+		inputActions.Player.Pause.performed += OnPause;
 	}
 
 	void OnDisable()
 	{
 		inputActions.Player.Disable();
+
+		inputActions.Player.Pause.performed -= OnPause;
 	}
 
 	// Update is called once per frame
@@ -92,6 +103,8 @@ public class PlayerController : MonoBehaviour
 		Debug.Log("grounded = " + grounded);
 		if (grounded)
 		{
+			animator.SetBool("falling", false);
+
 			if (jumping)
 			{
 				currentJumpForce += jumpForceIncrement * Time.deltaTime;
@@ -109,6 +122,22 @@ public class PlayerController : MonoBehaviour
 		else
 		{
 			animator.SetBool("landed", false);
+
+			animator.SetBool("falling", true);
+		}
+
+		float move = inputActions.Player.Movement.ReadValue<Vector2>().x;
+
+		if (jumping)
+		{
+			if (move > 0 && !facingRight)
+			{
+				Flip();
+			}
+			else if (move < 0 && facingRight)
+			{
+				Flip();
+			}
 		}
 	}
 
@@ -120,6 +149,14 @@ public class PlayerController : MonoBehaviour
 			Vector2 bounceDirection = collision.contacts[0].normal;
 			// Apply the bounce force
 			rigidbody.AddForce(bounceDirection * bounceForce, ForceMode2D.Impulse);
+		}
+
+		if (collision.gameObject.CompareTag("Goal"))
+		{
+			// Completed level
+			Time.timeScale = 0f;
+			winMenu.SetActive(true);
+			EventSystem.current.SetSelectedGameObject(winMenuSelectedButton);
 		}
 	}
 
@@ -142,6 +179,15 @@ public class PlayerController : MonoBehaviour
 				// ... flip the player
 				Flip();
 			}
+
+			if (move != 0)
+			{
+				animator.SetBool("moving", true);
+			}
+			else
+			{
+				animator.SetBool("moving", false);
+			}
 		}
 	}
 
@@ -157,11 +203,6 @@ public class PlayerController : MonoBehaviour
 			grounded = false;   // grounded is false so that player cannot move in air
 
 			animator.SetBool("jumpStart", true);
-
-			// if (!jumping && grounded)
-			// {
-			//	  rigidbody.velocity = Vector2.zero;  // Set player's velocity to zero, stop moving when jump is pressed
-			// }
 		}
 		else if (context.canceled)
 		{
@@ -193,5 +234,21 @@ public class PlayerController : MonoBehaviour
 		Vector3 theScale = transform.localScale;
 		theScale.x *= -1;
 		transform.localScale = theScale;
+	}
+
+	void OnPause(InputAction.CallbackContext context)
+	{
+		// The Pause input action was triggered, so toggle the pause state and show or hide the pause menu
+		if (pauseMenu.activeSelf)
+		{
+			pauseMenu.SetActive(false);
+			Time.timeScale = 1f;
+		}
+		else
+		{
+			pauseMenu.SetActive(true);
+			EventSystem.current.SetSelectedGameObject(pauseMenuSelectedButton);
+			Time.timeScale = 0f;
+		}
 	}
 }
